@@ -1,0 +1,291 @@
+{
+    "designSystem": {
+      "name": "Hair & Beauty App Design System",
+      "version": "1.0.0",
+      "description": "A comprehensive design system for hair and beauty applications with clean, modern aesthetics"
+    },
+    "colorPalette": {
+      "primary": {
+        "purple": "#8B7CC8",
+        "purpleLight": "#B8A9E8",
+        "purpleDark": "#6B5CA0"
+      },
+      "secondary": {
+        "coral": "#E8A688",
+        "coralLight": "#F4C4A8",
+        "coralDark": "#D8956E"
+      },
+      "neutral": {
+        "white": "#FFFFFF",
+        "lightGray": "#F8F8F8",
+        "mediumGray": "#E5E5E5",
+        "darkGray": "#666666",
+        "black": "#000000"
+      },
+      "backgrounds": {
+        "primary": "#FFFFFF",
+        "secondary": "#F5F3F8",
+        "card": "#FFFFFF",
+        "overlay": "rgba(0, 0, 0, 0.1)"
+      }
+    },
+    "typography": {
+      "fontFamily": {
+        "primary": "SF Pro Display, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+      },
+      "fontSizes": {
+        "xs": "12px",
+        "sm": "14px",
+        "base": "16px",
+        "lg": "18px",
+        "xl": "20px",
+        "2xl": "24px",
+        "3xl": "32px",
+        "4xl": "40px"
+      },
+      "fontWeights": {
+        "regular": 400,
+        "medium": 500,
+        "semibold": 600,
+        "bold": 700
+      },
+      "lineHeights": {
+        "tight": 1.2,
+        "normal": 1.5,
+        "relaxed": 1.6
+      }
+    },
+    "spacing": {
+      "xs": "4px",
+      "sm": "8px",
+      "md": "12px",
+      "lg": "16px",
+      "xl": "20px",
+      "2xl": "24px",
+      "3xl": "32px",
+      "4xl": "40px",
+      "5xl": "48px"
+    },
+    "borderRadius": {
+      "sm": "8px",
+      "md": "12px",
+      "lg": "16px",
+      "xl": "20px",
+      "full": "9999px"
+    },
+    "shadows": {
+      "card": "0 2px 8px rgba(0, 0, 0, 0.1)",
+      "button": "0 4px 12px rgba(139, 124, 200, 0.3)",
+      "elevated": "0 8px 24px rgba(0, 0, 0, 0.15)"
+    },
+    "components": {
+      "navigationBar": {
+        "structure": "horizontal layout with logo/brand, navigation items, and user actions",
+        "height": "64px",
+        "background": "white",
+        "itemSpacing": "32px",
+        "elements": {
+          "logo": {
+            "position": "left",
+            "type": "icon or text",
+            "size": "24px"
+          },
+          "navigationItems": {
+            "position": "center",
+            "style": "text links",
+            "fontSize": "base",
+            "fontWeight": "medium",
+            "activeState": "underline or color change"
+          },
+          "userActions": {
+            "position": "right",
+            "elements": ["search icon", "notifications", "user avatar"],
+            "iconSize": "20px",
+            "avatarSize": "32px"
+          }
+        }
+      },
+      "cards": {
+        "workshop": {
+          "borderRadius": "lg",
+          "padding": "0",
+          "shadow": "card",
+          "background": "white",
+          "imageAspectRatio": "16:9",
+          "contentPadding": "lg",
+          "hoverEffect": "subtle scale or shadow increase"
+        },
+        "profileImage": {
+          "borderRadius": "lg",
+          "aspectRatio": "1:1 or 3:4",
+          "overlay": "gradient or solid color on hover",
+          "favoriteIcon": {
+            "position": "top-right",
+            "background": "white circle",
+            "size": "32px",
+            "iconSize": "16px"
+          }
+        }
+      },
+      "buttons": {
+        "primary": {
+          "background": "purple",
+          "color": "white",
+          "padding": "12px 24px",
+          "borderRadius": "full",
+          "fontSize": "sm",
+          "fontWeight": "medium",
+          "shadow": "button",
+          "hoverState": "darker background"
+        },
+        "secondary": {
+          "background": "coral",
+          "color": "white",
+          "padding": "12px 24px",
+          "borderRadius": "full",
+          "fontSize": "sm",
+          "fontWeight": "medium"
+        },
+        "ghost": {
+          "background": "transparent",
+          "color": "darkGray",
+          "border": "1px solid mediumGray",
+          "padding": "8px 16px",
+          "borderRadius": "md"
+        }
+      },
+      "tabs": {
+        "style": "underlined",
+        "activeColor": "purple",
+        "inactiveColor": "darkGray",
+        "fontSize": "base",
+        "fontWeight": "medium",
+        "underlineHeight": "2px",
+        "spacing": "24px"
+      },
+      "lists": {
+        "workshop": {
+          "itemSpacing": "lg",
+          "imageSize": "80px x 80px",
+          "borderRadius": "md",
+          "layout": "horizontal",
+          "contentAlignment": "left",
+          "metaInfo": {
+            "instructor": "medium weight",
+            "datetime": "regular weight, smaller size"
+          }
+        }
+      },
+      "bottomNavigation": {
+        "height": "80px",
+        "background": "white",
+        "itemCount": "5",
+        "iconSize": "24px",
+        "fontSize": "xs",
+        "activeColor": "purple",
+        "inactiveColor": "mediumGray",
+        "layout": "evenly distributed"
+      }
+    },
+    "layoutPatterns": {
+      "dashboard": {
+        "structure": "navigation + hero section + content grid",
+        "heroSection": {
+          "background": "lightGray",
+          "padding": "5xl",
+          "content": "welcome message + trial info + featured workshop"
+        },
+        "contentGrid": {
+          "columns": "2-3 columns on desktop",
+          "gap": "2xl",
+          "sections": ["workshops", "hairstyles", "video tutorials", "community"]
+        }
+      },
+      "listView": {
+        "structure": "header + filter tabs + item list",
+        "header": {
+          "title": "large heading",
+          "actions": "search + profile"
+        },
+        "filterTabs": {
+          "style": "pill buttons",
+          "activeState": "filled background"
+        },
+        "itemList": {
+          "layout": "vertical stack",
+          "itemSpacing": "lg",
+          "loadMore": "pagination or infinite scroll"
+        }
+      },
+      "gallery": {
+        "structure": "header + category tabs + masonry grid",
+        "categoryTabs": {
+          "style": "pill buttons",
+          "layout": "horizontal scroll on mobile"
+        },
+        "grid": {
+          "columns": "2 on mobile, 3+ on desktop",
+          "gap": "sm",
+          "aspectRatio": "varies (masonry style)",
+          "overlay": "heart icon on hover/tap"
+        }
+      }
+    },
+    "interactionPatterns": {
+      "hover": {
+        "cards": "subtle shadow increase + slight scale",
+        "buttons": "background color darkening",
+        "images": "overlay appearance"
+      },
+      "loading": {
+        "skeleton": "animated gray blocks",
+        "spinners": "circular, brand colored"
+      },
+      "feedback": {
+        "favorites": "heart icon fill animation",
+        "registration": "button state change + success message"
+      }
+    },
+    "responsiveBreakpoints": {
+      "mobile": "320px - 767px",
+      "tablet": "768px - 1023px",
+      "desktop": "1024px+"
+    },
+    "designPrinciples": {
+      "visual": [
+        "Clean and minimal aesthetic",
+        "Generous use of white space",
+        "Soft, rounded corners throughout",
+        "High-quality imagery as focal points",
+        "Consistent purple and coral accent colors"
+      ],
+      "layout": [
+        "Card-based information architecture",
+        "Clear visual hierarchy",
+        "Consistent spacing system",
+        "Grid-based layouts",
+        "Mobile-first responsive design"
+      ],
+      "interaction": [
+        "Subtle hover and focus states",
+        "Clear call-to-action buttons",
+        "Intuitive navigation patterns",
+        "Immediate visual feedback",
+        "Smooth transitions and animations"
+      ]
+    },
+    "contentStructure": {
+      "workshop": {
+        "requiredFields": ["title", "instructor", "date", "time", "image"],
+        "optionalFields": ["description", "duration", "skill_level", "materials"]
+      },
+      "profile": {
+        "requiredFields": ["name", "avatar"],
+        "optionalFields": ["bio", "specialties", "social_links"]
+      },
+      "hairstyle": {
+        "requiredFields": ["image", "category"],
+        "optionalFields": ["title", "difficulty", "duration", "instructions"]
+      }
+    }
+  }
