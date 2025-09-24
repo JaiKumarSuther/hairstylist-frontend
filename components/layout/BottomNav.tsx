@@ -34,26 +34,67 @@ const NavItem: React.FC<NavItemProps> = ({
     <Link
       href={href}
       className={cn(
-        "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors",
-        "hover:bg-accent hover:text-accent-foreground",
-        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+        // Flutter Material Design base styles
+        "group flex flex-col items-center justify-center gap-1 px-2 py-2 min-w-0 flex-1",
+        "flutter-transition flutter-ripple",
+        "focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1",
+        "relative overflow-hidden",
+        // Flutter-style active state
         isActive 
-          ? "text-primary bg-primary/10" 
-          : "text-muted-foreground"
+          ? "text-primary" 
+          : "text-muted-foreground hover:text-foreground"
       )}
     >
-      <div className="relative">
-        <Icon className="h-5 w-5" />
+      {/* Flutter Material Design ripple effect */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className={cn(
+          "absolute inset-0 flutter-transition",
+          "group-active:bg-primary/12 group-active:scale-110",
+          isActive ? "bg-primary/8" : "group-hover:bg-primary/6"
+        )} />
+      </div>
+      
+      {/* Icon with Flutter Material Design styling */}
+      <div className="relative z-10 flex items-center justify-center">
+        <div className={cn(
+          "p-1.5 rounded-full flutter-transition",
+          isActive 
+            ? "bg-primary/12 flutter-elevation-1" 
+            : "group-hover:bg-primary/8"
+        )}>
+          <Icon className={cn(
+            "h-5 w-5 flutter-transition",
+            isActive 
+              ? "text-primary" 
+              : "text-muted-foreground group-hover:text-foreground"
+          )} />
+        </div>
+        
+        {/* Flutter Material Design badge */}
         {badge && badge > 0 && (
           <Badge 
             variant="destructive" 
-            className="absolute -top-2 -right-2 h-4 w-4 flex items-center justify-center p-0 text-xs"
+            className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-xs font-medium rounded-full flutter-elevation-1"
           >
             {badge > 99 ? '99+' : badge}
           </Badge>
         )}
       </div>
-      <span className="text-xs font-medium">{label}</span>
+      
+      {/* Flutter Material Design typography */}
+      <span className={cn(
+        "text-xs font-medium flutter-transition z-10 text-center leading-tight",
+        isActive 
+          ? "text-primary" 
+          : "text-muted-foreground group-hover:text-foreground"
+      )}>
+        {label}
+      </span>
+      
+      {/* Flutter-style active indicator with Material Design animation */}
+      {isActive && (
+        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-primary rounded-full flutter-transition" />
+      )}
     </Link>
   );
 };
@@ -61,13 +102,13 @@ const NavItem: React.FC<NavItemProps> = ({
 export const BottomNav: React.FC = () => {
   const pathname = usePathname();
 
-  // Mock badge counts - in real app, these would come from state
+  // TODO: Replace with real badge counts from API
   const badgeCounts = {
     '/': 0,
-    '/workshops': 2,
+    '/workshops': 0, // Will be populated from API
     '/gallery': 0,
-    '/community': 5,
-    '/ai-chat': 1,
+    '/community': 0, // Will be populated from API
+    '/ai-chat': 0, // Will be populated from API
   };
 
   const isActive = (href: string) => {
@@ -78,9 +119,13 @@ export const BottomNav: React.FC = () => {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-around h-16">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flutter-bottom-nav">
+      {/* Flutter Material Design background with elevation */}
+      <div className="absolute inset-0 flutter-elevation-2" />
+      
+      {/* Navigation content with Flutter layout */}
+      <div className="relative">
+        <div className="flex items-stretch h-16 px-1">
           {NAV_ITEMS.map((item) => {
             const iconMap: Record<string, LucideIcon> = {
               Home,
@@ -105,6 +150,9 @@ export const BottomNav: React.FC = () => {
           })}
         </div>
       </div>
+      
+      {/* Flutter-style safe area */}
+      <div className="h-safe-area-inset-bottom bg-background" />
     </nav>
   );
 };

@@ -1,63 +1,66 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, MessageCircle, Share, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, Share, MoreHorizontal, Loader2 } from 'lucide-react';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { usePosts, useLikePost, useUnlikePost, useCreateComment } from '@/lib/api/hooks/community';
+import { useAuth } from '@/hooks/useAuth';
+import { formatDistanceToNow } from 'date-fns';
 
-// Mock community posts
-const mockPosts = [
-  {
-    id: '1',
-    author: {
-      name: 'Sarah Johnson',
-      avatar: '/api/placeholder/40/40',
-      isVerified: true,
-    },
-    content: 'Just finished this amazing balayage technique! The color transition is so smooth. What do you think?',
-    images: ['/api/placeholder/400/300', '/api/placeholder/400/300'],
-    timestamp: '2 hours ago',
-    likes: 24,
-    comments: 8,
-    liked: false,
-    category: 'Technique',
-  },
-  {
-    id: '2',
-    author: {
-      name: 'Mike Chen',
-      avatar: '/api/placeholder/40/40',
-      isVerified: false,
-    },
-    content: 'Looking for advice on cutting curly hair. Any tips for maintaining the natural curl pattern while adding layers?',
-    timestamp: '4 hours ago',
-    likes: 12,
-    comments: 15,
-    liked: true,
-    category: 'Question',
-  },
-  {
-    id: '3',
-    author: {
-      name: 'Emma Rodriguez',
-      avatar: '/api/placeholder/40/40',
-      isVerified: true,
-    },
-    content: 'Behind the scenes of our latest photoshoot! The team worked so hard to create this stunning look.',
-    images: ['/api/placeholder/400/300'],
-    timestamp: '6 hours ago',
-    likes: 45,
-    comments: 12,
-    liked: false,
-    category: 'Behind the Scenes',
-  },
-];
+interface Post {
+  id: string;
+  author: {
+    name: string;
+    avatar: string;
+    isVerified: boolean;
+  };
+  content: string;
+  images?: string[];
+  timestamp: string;
+  likes: number;
+  comments: number;
+  liked: boolean;
+  category: string;
+}
 
-const PostCard: React.FC<{ post: typeof mockPosts[0] }> = ({ post }) => {
+const PostCard: React.FC<{ post: Post }> = ({ post }) => {
+  const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const { user } = useAuth();
+  const likePost = useLikePost();
+  const unlikePost = useUnlikePost();
+  const createComment = useCreateComment();
+
+  const handleLike = async () => {
+    if (!user) return;
+    
+    if (post.liked) {
+      await unlikePost.mutateAsync(post.id);
+    } else {
+      await likePost.mutateAsync(post.id);
+    }
+  };
+
+  const handleComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentText.trim() || !user) return;
+
+    try {
+      await createComment.mutateAsync({
+        postId: post.id,
+        data: { content: commentText.trim() }
+      });
+      setCommentText('');
+    } catch (error) {
+      console.error('Failed to create comment:', error);
+    }
+  };
+
   return (
     <Card className="hover:shadow-md transition-shadow duration-200">
       <CardHeader className="pb-3">
@@ -123,11 +126,22 @@ const PostCard: React.FC<{ post: typeof mockPosts[0] }> = ({ post }) => {
               className={`gap-2 ${
                 post.liked ? 'text-red-500' : 'text-muted-foreground'
               }`}
+              onClick={handleLike}
+              disabled={likePost.isPending || unlikePost.isPending}
             >
-              <Heart className={`h-4 w-4 ${post.liked ? 'fill-current' : ''}`} />
+              {likePost.isPending || unlikePost.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Heart className={`h-4 w-4 ${post.liked ? 'fill-current' : ''}`} />
+              )}
               {post.likes}
             </Button>
-            <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="gap-2 text-muted-foreground"
+              onClick={() => setShowComments(!showComments)}
+            >
               <MessageCircle className="h-4 w-4" />
               {post.comments}
             </Button>
@@ -137,12 +151,86 @@ const PostCard: React.FC<{ post: typeof mockPosts[0] }> = ({ post }) => {
             </Button>
           </div>
         </div>
+
+        {/* Comments Section */}
+        {showComments && (
+          <div className="border-t pt-4 space-y-3">
+            <form onSubmit={handleComment} className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Write a comment..."
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                className="flex-1 px-3 py-2 border rounded-md text-sm"
+                disabled={!user || createComment.isPending}
+              />
+              <Button 
+                type="submit" 
+                size="sm"
+                disabled={!user || !commentText.trim() || createComment.isPending}
+              >
+                {createComment.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  'Post'
+                )}
+              </Button>
+            </form>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
 };
 
 export default function CommunityPage() {
+  const { data: postsData, isLoading, error } = usePosts();
+  const { user } = useAuth();
+
+  if (isLoading) {
+    return (
+      <ErrorBoundary>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">Community</h1>
+              <p className="text-muted-foreground">
+                Connect with fellow stylists and share your work
+              </p>
+            </div>
+            <Button>Create Post</Button>
+          </div>
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        </div>
+      </ErrorBoundary>
+    );
+  }
+
+  if (error) {
+    return (
+      <ErrorBoundary>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">Community</h1>
+              <p className="text-muted-foreground">
+                Connect with fellow stylists and share your work
+              </p>
+            </div>
+            <Button>Create Post</Button>
+          </div>
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Failed to load posts. Please try again later.</p>
+          </div>
+        </div>
+      </ErrorBoundary>
+    );
+  }
+
+  const posts = postsData?.posts || [];
+
   return (
     <ErrorBoundary>
       <div className="space-y-6">
@@ -158,9 +246,27 @@ export default function CommunityPage() {
 
         {/* Posts */}
         <div className="space-y-4">
-          {mockPosts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
+          {posts.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No posts yet. Be the first to share something!</p>
+            </div>
+          ) : (
+            posts.map((post: any) => (
+              <PostCard 
+                key={post.id} 
+                post={{
+                  ...post,
+                  timestamp: formatDistanceToNow(new Date(post.createdAt), { addSuffix: true }),
+                  author: {
+                    name: post.author?.name || 'Unknown User',
+                    avatar: post.author?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face',
+                    isVerified: post.author?.isPremium || false,
+                  },
+                  images: post.images ? JSON.parse(post.images) : undefined,
+                }}
+              />
+            ))
+          )}
         </div>
       </div>
     </ErrorBoundary>

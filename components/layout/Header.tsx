@@ -2,14 +2,14 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Search, Bell, Menu, ArrowLeft } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
+import { Bell, Menu, ArrowLeft, Home, Calendar, Image, Users, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useResponsive } from '@/hooks/useResponsive';
+import { cn } from '@/lib/utils';
 
 interface HeaderProps {
   showBack?: boolean;
@@ -24,6 +24,7 @@ export const Header: React.FC<HeaderProps> = ({
   onMenuClick,
 }) => {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, isAuthenticated } = useAuth();
   const { isMobile } = useResponsive();
 
@@ -31,13 +32,20 @@ export const Header: React.FC<HeaderProps> = ({
     router.back();
   };
 
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const query = formData.get('search') as string;
-    if (query.trim()) {
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+  // Navigation items
+  const navItems = [
+    { icon: Home, label: 'Home', href: '/' },
+    { icon: Calendar, label: 'Workshops', href: '/workshops' },
+    { icon: Image, label: 'Gallery', href: '/gallery' },
+    { icon: Users, label: 'Community', href: '/community' },
+    { icon: MessageCircle, label: 'AI Chat', href: '/ai-chat' },
+  ];
+
+  const isActive = (href: string) => {
+    if (href === '/') {
+      return pathname === '/';
     }
+    return pathname.startsWith(href);
   };
 
   return (
@@ -77,38 +85,38 @@ export const Header: React.FC<HeaderProps> = ({
           </Link>
         </div>
 
-        {/* Center section - Search */}
-        {!isMobile && (
-          <div className="flex-1 max-w-md mx-8">
-            <form onSubmit={handleSearch} className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                name="search"
-                placeholder="Search workshops, styles, tutorials..."
-                className="pl-10 pr-4"
-              />
-            </form>
-          </div>
+        {/* Center section - Navigation */}
+        {!isMobile && isAuthenticated && (
+          <nav className="flex-1 flex items-center justify-center gap-1">
+            {navItems.map((item) => {
+              const IconComponent = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                    "hover:bg-accent hover:text-accent-foreground",
+                    isActive(item.href)
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  <IconComponent className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
         )}
 
         {/* Right section */}
         <div className="flex items-center gap-2">
-          {isMobile && (
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <Search className="h-4 w-4" />
-            </Button>
-          )}
-
           {isAuthenticated ? (
             <>
               <Button variant="ghost" size="icon" className="h-8 w-8 relative">
                 <Bell className="h-4 w-4" />
-                <Badge 
-                  variant="destructive" 
-                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                >
-                  3
-                </Badge>
+                {/* TODO: Add real notification count from API */}
               </Button>
 
               <div className="flex items-center gap-2">

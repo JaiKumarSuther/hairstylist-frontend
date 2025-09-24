@@ -40,12 +40,12 @@ export const WelcomeSection: React.FC = () => {
   };
 
   const getFeaturedContent = () => {
-    // Mock featured content - in real app, this would come from API
+    // TODO: Replace with real featured workshop from API
     return {
       title: 'Advanced Cutting Techniques',
       instructor: 'Sarah Johnson',
       date: 'Tomorrow at 2:00 PM',
-      image: '/api/placeholder/400/200',
+      image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=200&fit=crop',
       isLive: true
     };
   };

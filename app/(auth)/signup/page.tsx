@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { useSignup } from '@/lib/api/hooks/auth';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 
 export default function SignupPage() {
@@ -19,23 +19,24 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { signup, isLoading, error, clearError } = useAuth();
+  const signupMutation = useSignup();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearError();
 
     if (password !== confirmPassword) {
       return;
     }
     
-    try {
-      await signup({ name, email, password, confirmPassword });
-      router.push('/');
-    } catch {
-      // Error is handled by the auth hook
-    }
+    signupMutation.mutate(
+      { name, email, password, confirmPassword },
+      {
+        onSuccess: () => {
+          router.push('/');
+        },
+      }
+    );
   };
 
   return (
@@ -63,9 +64,9 @@ export default function SignupPage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
+                {signupMutation.error && (
                   <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-                    {error}
+                    {signupMutation.error.message}
                   </div>
                 )}
 
@@ -181,8 +182,8 @@ export default function SignupPage() {
                   </Label>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Creating account...' : 'Create Account'}
+                <Button type="submit" className="w-full" disabled={signupMutation.isPending}>
+                  {signupMutation.isPending ? 'Creating account...' : 'Create Account'}
                 </Button>
               </form>
 

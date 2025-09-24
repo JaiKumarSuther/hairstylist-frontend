@@ -46,7 +46,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Main content */}
         <main className={cn(
           "min-h-screen",
-          isMobile ? "pb-20" : "" // Add padding for bottom nav on mobile
+          isMobile ? "pb-16" : "" // Add padding for Flutter-style bottom nav on mobile
         )}>
           <div className="container mx-auto px-4 py-6">
             {children}

@@ -1,70 +1,27 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, User } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Calendar, Clock, User, Search, Filter } from 'lucide-react';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { useWorkshops, useRegisterWorkshop, useUnregisterWorkshop } from '@/lib/api/hooks/workshops';
+import { useWorkshopStore } from '@/store/workshopStore';
+import { useAuthStore } from '@/store/authStore';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
-// Mock workshop data
-const mockWorkshops = [
-  {
-    id: '1',
-    title: 'Advanced Cutting Techniques',
-    instructor: 'Sarah Johnson',
-    date: '2024-01-15',
-    time: '2:00 PM',
-    image: '/api/placeholder/400/200',
-    category: 'Cutting',
-    description: 'Learn advanced cutting techniques for modern hairstyles',
-    duration: 120,
-    skillLevel: 'intermediate',
-    registered: false,
-    maxParticipants: 20,
-    currentParticipants: 15,
-    price: 0,
-    isFree: true,
-  },
-  {
-    id: '2',
-    title: 'Color Theory & Application',
-    instructor: 'Michael Chen',
-    date: '2024-01-18',
-    time: '10:00 AM',
-    image: '/api/placeholder/400/200',
-    category: 'Coloring',
-    description: 'Master color theory and application techniques',
-    duration: 180,
-    skillLevel: 'beginner',
-    registered: true,
-    maxParticipants: 15,
-    currentParticipants: 12,
-    price: 0,
-    isFree: true,
-  },
-  {
-    id: '3',
-    title: 'Business & Marketing for Stylists',
-    instructor: 'Emma Rodriguez',
-    date: '2024-01-20',
-    time: '6:00 PM',
-    image: '/api/placeholder/400/200',
-    category: 'Business',
-    description: 'Build your client base and grow your business',
-    duration: 90,
-    skillLevel: 'beginner',
-    registered: false,
-    maxParticipants: 30,
-    currentParticipants: 25,
-    price: 0,
-    isFree: true,
-  },
-];
+const WorkshopCard: React.FC<{ workshop: any }> = ({ workshop }) => {
+  const registerMutation = useRegisterWorkshop();
+  const unregisterMutation = useUnregisterWorkshop();
+  const { isAuthenticated } = useAuthStore();
+  const router = useRouter();
 
-const WorkshopCard: React.FC<{ workshop: typeof mockWorkshops[0] }> = ({ workshop }) => {
   const getSkillLevelColor = (level: string) => {
-    switch (level) {
+    switch (level?.toLowerCase()) {
       case 'beginner': return 'bg-green-100 text-green-800';
       case 'intermediate': return 'bg-yellow-100 text-yellow-800';
       case 'advanced': return 'bg-red-100 text-red-800';
@@ -72,13 +29,36 @@ const WorkshopCard: React.FC<{ workshop: typeof mockWorkshops[0] }> = ({ worksho
     }
   };
 
+  const handleRegister = () => {
+    // Check if user is authenticated before attempting registration
+    if (!isAuthenticated) {
+      toast.error('Please login to register for workshops');
+      router.push('/login');
+      return;
+    }
+
+    // Check if there's a valid token in localStorage
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      toast.error('Please login to register for workshops');
+      router.push('/login');
+      return;
+    }
+
+    if (workshop.registered) {
+      unregisterMutation.mutate(workshop.id);
+    } else {
+      registerMutation.mutate(workshop.id);
+    }
+  };
+
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300">
-      <CardHeader className="pb-3">
+    <Card className="group hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+      <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg mb-2">{workshop.title}</CardTitle>
-            <CardDescription className="text-sm">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-lg mb-2 line-clamp-2">{workshop.title}</CardTitle>
+            <CardDescription className="text-sm line-clamp-3">
               {workshop.description}
             </CardDescription>
           </div>
@@ -88,23 +68,23 @@ const WorkshopCard: React.FC<{ workshop: typeof mockWorkshops[0] }> = ({ worksho
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-4">
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+      <CardContent className="space-y-4 flex-1 flex flex-col">
+        <div className="flex flex-col gap-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
-            <User className="h-4 w-4" />
-            {workshop.instructor}
+            <User className="h-4 w-4 flex-shrink-0" />
+            <span className="truncate">{workshop.instructor}</span>
           </div>
           <div className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
-            {workshop.date}
+            <Calendar className="h-4 w-4 flex-shrink-0" />
+            <span>{new Date(workshop.date).toLocaleDateString()}</span>
           </div>
           <div className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            {workshop.time}
+            <Clock className="h-4 w-4 flex-shrink-0" />
+            <span>{workshop.time}</span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-auto">
           <div className="text-sm text-muted-foreground">
             {workshop.currentParticipants}/{workshop.maxParticipants} participants
           </div>
@@ -117,8 +97,17 @@ const WorkshopCard: React.FC<{ workshop: typeof mockWorkshops[0] }> = ({ worksho
           <Button 
             className="flex-1"
             variant={workshop.registered ? "outline" : "default"}
+            onClick={handleRegister}
+            disabled={registerMutation.isPending || unregisterMutation.isPending}
           >
-            {workshop.registered ? 'Registered' : 'Register'}
+            {registerMutation.isPending || unregisterMutation.isPending 
+              ? 'Loading...' 
+              : workshop.registered 
+                ? 'Registered' 
+                : isAuthenticated 
+                  ? 'Register' 
+                  : 'Login to Register'
+            }
           </Button>
           <Button variant="ghost" size="icon">
             <Calendar className="h-4 w-4" />
@@ -130,6 +119,31 @@ const WorkshopCard: React.FC<{ workshop: typeof mockWorkshops[0] }> = ({ worksho
 };
 
 export default function WorkshopsPage() {
+  const { filters, setFilters, searchWorkshops } = useWorkshopStore();
+  const { data: workshopsData, isLoading, error } = useWorkshops(filters);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    searchWorkshops(searchQuery);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-destructive">Failed to load workshops. Please try again.</p>
+      </div>
+    );
+  }
+
   return (
     <ErrorBoundary>
       <div className="space-y-6">
@@ -140,11 +154,36 @@ export default function WorkshopsPage() {
           </p>
         </div>
 
+        {/* Search and Filters */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <form onSubmit={handleSearch} className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search workshops..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </form>
+          <Button variant="outline">
+            <Filter className="h-4 w-4 mr-2" />
+            Filters
+          </Button>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockWorkshops.map((workshop) => (
+          {workshopsData?.workshops?.map((workshop: any) => (
             <WorkshopCard key={workshop.id} workshop={workshop} />
           ))}
         </div>
+
+        {workshopsData?.workshops?.length === 0 && (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">No workshops found.</p>
+          </div>
+        )}
       </div>
     </ErrorBoundary>
   );

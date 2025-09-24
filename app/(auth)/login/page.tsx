@@ -2,33 +2,53 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { useLogin } from '@/lib/api/hooks/auth';
+import { useAuthStore } from '@/store/authStore';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { useEffect } from 'react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isLoading, error, clearError } = useAuth();
+  const loginMutation = useLogin();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { isAuthenticated } = useAuthStore();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    console.log('Login page - Auth state changed:', { isAuthenticated, user: isAuthenticated });
+    if (isAuthenticated) {
+      const redirectTo = searchParams.get('redirect') || '/';
+      console.log('Redirecting to:', redirectTo);
+      router.push(redirectTo);
+    }
+  }, [isAuthenticated, router, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearError();
     
-    try {
-      await login({ email, password });
-      router.push('/');
-    } catch {
-      // Error is handled by the auth hook
-    }
+    loginMutation.mutate(
+      { email, password },
+      {
+        onSuccess: () => {
+          console.log('Login mutation successful');
+          // The useEffect will handle the redirect when isAuthenticated becomes true
+          // This ensures the auth state is properly updated before redirecting
+        },
+        onError: (error) => {
+          console.error('Login mutation failed:', error);
+        },
+      }
+    );
   };
 
   return (
@@ -56,9 +76,9 @@ export default function LoginPage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
+                {loginMutation.error && (
                   <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-                    {error}
+                    {loginMutation.error.message}
                   </div>
                 )}
 
@@ -126,8 +146,8 @@ export default function LoginPage() {
                   </Link>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Signing in...' : 'Sign In'}
+                <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+                  {loginMutation.isPending ? 'Signing in...' : 'Sign In'}
                 </Button>
               </form>
 

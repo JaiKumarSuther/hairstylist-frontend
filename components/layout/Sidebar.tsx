@@ -71,13 +71,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
-  // Mock badge counts - in real app, these would come from state
+  // TODO: Replace with real badge counts from API
   const badgeCounts = {
     '/': 0,
-    '/workshops': 2,
+    '/workshops': 0, // Will be populated from API
     '/gallery': 0,
-    '/community': 5,
-    '/ai-chat': 1,
+    '/community': 0, // Will be populated from API
+    '/ai-chat': 0, // Will be populated from API
   };
 
   const isActive = (href: string) => {

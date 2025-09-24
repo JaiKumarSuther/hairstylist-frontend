@@ -1,6 +1,6 @@
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 
 export const useAuth = () => {
   const {
@@ -12,7 +12,6 @@ export const useAuth = () => {
     signup,
     logout,
     updateUser,
-    checkTrialStatus,
     refreshUser,
     clearError,
     forgotPassword,
@@ -21,12 +20,8 @@ export const useAuth = () => {
 
   const router = useRouter();
 
-  // Check trial status on mount
-  useEffect(() => {
-    if (user && !user.isPremium) {
-      checkTrialStatus();
-    }
-  }, [user, checkTrialStatus]);
+  // Trial status is now calculated in the auth store when user is loaded
+  // No need to continuously check it here
 
   // Auto-refresh user data periodically
   useEffect(() => {

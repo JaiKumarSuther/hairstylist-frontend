@@ -2,10 +2,16 @@
 export interface User {
   id: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
+  phone?: string;
+  location?: string;
   avatar?: string;
   bio?: string;
   specialties?: string[];
+  experience?: string;
+  certifications?: string[];
   social_links?: {
     instagram?: string;
     twitter?: string;

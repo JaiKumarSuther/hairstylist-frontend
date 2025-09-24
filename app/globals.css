@@ -120,3 +120,99 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  /* Safe area support for modern devices */
+  .h-safe-area-inset-bottom {
+    height: env(safe-area-inset-bottom, 0px);
+  }
+  
+  /* Enhanced backdrop blur support */
+  .backdrop-blur-md {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  
+  /* Smooth scale animations */
+  .hover\:scale-105:hover {
+    transform: scale(1.05);
+  }
+  
+  .active\:scale-95:active {
+    transform: scale(0.95);
+  }
+  
+  /* Enhanced shadow utilities */
+  .shadow-primary\/10 {
+    box-shadow: 0 4px 6px -1px rgba(139, 124, 200, 0.1), 0 2px 4px -1px rgba(139, 124, 200, 0.06);
+  }
+  
+  .shadow-primary\/20 {
+    box-shadow: 0 4px 6px -1px rgba(139, 124, 200, 0.2), 0 2px 4px -1px rgba(139, 124, 200, 0.12);
+  }
+  
+  /* Flutter Material Design utilities */
+  .flutter-elevation-1 {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  }
+  
+  .flutter-elevation-2 {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  }
+  
+  .flutter-elevation-4 {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+  }
+  
+  /* Flutter-style ripple effect */
+  .flutter-ripple {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .flutter-ripple::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+  }
+  
+  .flutter-ripple:active::before {
+    width: 300px;
+    height: 300px;
+  }
+  
+  /* Flutter Material Design transitions */
+  .flutter-transition {
+    transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  }
+  
+  /* Flutter-style bottom navigation bar */
+  .flutter-bottom-nav {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+}

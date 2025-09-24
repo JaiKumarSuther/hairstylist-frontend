@@ -68,16 +68,14 @@ const DashboardCardComponent: React.FC<DashboardCardProps> = ({ card }) => {
 };
 
 export const DashboardCards: React.FC = () => {
-  // const { user, isPremium, trialDaysLeft } = useAuth(); // Will be used for premium features
-
-  // Mock data - in real app, this would come from API
+  // TODO: Replace with real data from API hooks
   const dashboardCards: DashboardCard[] = [
     {
       title: 'Workshops',
       icon: 'Calendar',
       preview: 'Join our next cutting techniques workshop',
       href: '/workshops',
-      badge: 2,
+      badge: 0, // Will be populated from API
       description: 'Live training sessions'
     },
     {
@@ -99,7 +97,7 @@ export const DashboardCards: React.FC = () => {
       icon: 'Users',
       preview: 'Connect with fellow stylists',
       href: '/community',
-      badge: 5,
+      badge: 0, // Will be populated from API
       description: 'Share and learn'
     },
     {
@@ -107,7 +105,7 @@ export const DashboardCards: React.FC = () => {
       icon: 'MessageCircle',
       preview: 'Get instant styling advice',
       href: '/ai-chat',
-      badge: 1,
+      badge: 0, // Will be populated from API
       description: 'AI-powered assistance'
     }
   ];
