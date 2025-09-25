@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,13 +11,15 @@ import { useWorkshops, useRegisterWorkshop, useUnregisterWorkshop } from '@/lib/
 import { useWorkshopStore } from '@/store/workshopStore';
 import { useAuthStore } from '@/store/authStore';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { addToCalendar, setWorkshopReminder } from '@/lib/calendar';
+import { scheduleWorkshopReminders } from '@/lib/notifications';
 
 const WorkshopCard: React.FC<{ workshop: any }> = ({ workshop }) => {
   const registerMutation = useRegisterWorkshop();
   const unregisterMutation = useUnregisterWorkshop();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const router = useRouter();
 
   const getSkillLevelColor = (level: string) => {
@@ -29,7 +31,7 @@ const WorkshopCard: React.FC<{ workshop: any }> = ({ workshop }) => {
     }
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     // Check if user is authenticated before attempting registration
     if (!isAuthenticated) {
       toast.error('Please login to register for workshops');
@@ -49,6 +51,42 @@ const WorkshopCard: React.FC<{ workshop: any }> = ({ workshop }) => {
       unregisterMutation.mutate(workshop.id);
     } else {
       registerMutation.mutate(workshop.id);
+      
+      // Add to calendar and set reminder
+      const eventDate = new Date(`${workshop.date} ${workshop.time}`);
+      const endDate = new Date(eventDate.getTime() + (2 * 60 * 60 * 1000)); // 2 hours duration
+      
+      const calendarEvent = {
+        title: workshop.title,
+        description: `Workshop: ${workshop.description}\nInstructor: ${workshop.instructor}`,
+        startDate: eventDate,
+        endDate: endDate,
+        location: 'Online Workshop',
+        url: `${window.location.origin}/workshops/${workshop.id}`,
+      };
+      
+      const calendarSuccess = await addToCalendar(calendarEvent);
+      const reminderSuccess = await setWorkshopReminder(workshop);
+      
+      // Schedule push notifications
+      if (user) {
+        scheduleWorkshopReminders(
+          workshop.id,
+          workshop.title,
+          eventDate,
+          user.id || user.email || 'anonymous'
+        );
+      }
+      
+      if (calendarSuccess) {
+        toast.success('Workshop added to your calendar!');
+      }
+      
+      if (reminderSuccess) {
+        toast.success('Reminder set for 1 day before the workshop!');
+      }
+      
+      toast.success('Push notifications scheduled for workshop reminders!');
     }
   };
 
@@ -109,7 +147,11 @@ const WorkshopCard: React.FC<{ workshop: any }> = ({ workshop }) => {
                   : 'Login to Register'
             }
           </Button>
-          <Button variant="ghost" size="icon">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => router.push(`/workshops/${workshop.id}`)}
+          >
             <Calendar className="h-4 w-4" />
           </Button>
         </div>
@@ -122,6 +164,17 @@ export default function WorkshopsPage() {
   const { filters, setFilters, searchWorkshops } = useWorkshopStore();
   const { data: workshopsData, isLoading, error } = useWorkshops(filters);
   const [searchQuery, setSearchQuery] = useState('');
+  const searchParams = useSearchParams();
+
+  // Handle URL parameters for filtering
+  useEffect(() => {
+    const filterParam = searchParams.get('filter');
+    if (filterParam === 'live') {
+      // Filter for live workshops (you can implement this logic based on your data structure)
+      setFilters({ ...filters, date_range: 'upcoming' });
+      toast.success('Showing live workshops');
+    }
+  }, [searchParams, setFilters, filters]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

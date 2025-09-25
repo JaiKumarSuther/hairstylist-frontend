@@ -149,15 +149,29 @@ export interface DashboardCard {
 
 // Auth types
 export interface LoginCredentials {
-  email: string;
+  email?: string;
+  phone?: string;
   password: string;
 }
 
 export interface SignupCredentials {
   name: string;
-  email: string;
+  email?: string;
+  phone?: string;
   password: string;
   confirmPassword: string;
+}
+
+// Note types
+export interface Note {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  tags: string[];
+  isFavorite: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface AuthState {

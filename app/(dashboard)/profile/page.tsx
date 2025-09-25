@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,11 +11,23 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
-import { Camera, Edit3, Save, X, User, Mail, Phone, MapPin, Calendar } from 'lucide-react';
+import { Camera, Edit3, Save, X, User, Mail, Phone, MapPin, Calendar, Crown, Check, Star } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, isPremium, trialDaysLeft } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState('personal');
+  const searchParams = useSearchParams();
+
+  // Handle URL parameters for tab selection
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'subscription') {
+      setActiveTab('subscription');
+    }
+  }, [searchParams]);
   const [profileData, setProfileData] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
@@ -56,6 +68,20 @@ export default function ProfilePage() {
     }));
   };
 
+  const handleUpgrade = (planType: 'monthly' | 'annual') => {
+    const price = planType === 'monthly' ? '$19.99' : '$199.99';
+    const period = planType === 'monthly' ? 'month' : 'year';
+    
+    // For now, show a toast message
+    // In a real app, this would redirect to a payment processor like Stripe
+    toast.success(`Redirecting to payment for ${planType} plan (${price}/${period})...`);
+    
+    // Simulate redirect to payment page
+    setTimeout(() => {
+      toast.success('Payment integration would be implemented here (Stripe, PayPal, etc.)');
+    }, 1500);
+  };
+
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl">
       <div className="mb-6">
@@ -63,11 +89,12 @@ export default function ProfilePage() {
         <p className="text-gray-600 mt-2">Manage your profile information and preferences</p>
       </div>
 
-      <Tabs defaultValue="personal" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="personal">Personal Info</TabsTrigger>
           <TabsTrigger value="professional">Professional</TabsTrigger>
           <TabsTrigger value="preferences">Preferences</TabsTrigger>
+          <TabsTrigger value="subscription">Subscription</TabsTrigger>
         </TabsList>
 
         <TabsContent value="personal" className="space-y-6">
@@ -272,6 +299,209 @@ export default function ProfilePage() {
                   </Button>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="subscription" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Crown className="h-5 w-5" />
+                Subscription Management
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Current Status */}
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                    isPremium ? 'bg-primary/10' : 'bg-orange-100'
+                  }`}>
+                    {isPremium ? (
+                      <Crown className="h-5 w-5 text-primary" />
+                    ) : (
+                      <Star className="h-5 w-5 text-orange-600" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">
+                      {isPremium ? 'Premium Member' : 'Free Trial'}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {isPremium 
+                        ? 'You have access to all premium features'
+                        : `${trialDaysLeft} days left in your trial`
+                      }
+                    </p>
+                  </div>
+                </div>
+                <Badge variant={isPremium ? "default" : "secondary"}>
+                  {isPremium ? 'Active' : 'Trial'}
+                </Badge>
+              </div>
+
+              {/* Premium Features */}
+              <div className="space-y-4">
+                <h4 className="font-semibold">Premium Features</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 p-3 border rounded-lg">
+                    <Check className="h-5 w-5 text-green-600" />
+                    <span className="text-sm">Unlimited workshop access</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 border rounded-lg">
+                    <Check className="h-5 w-5 text-green-600" />
+                    <span className="text-sm">Priority support</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 border rounded-lg">
+                    <Check className="h-5 w-5 text-green-600" />
+                    <span className="text-sm">Advanced AI chat features</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 border rounded-lg">
+                    <Check className="h-5 w-5 text-green-600" />
+                    <span className="text-sm">Exclusive content</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Upgrade Options */}
+              {!isPremium && (
+                <div className="space-y-4">
+                  <h4 className="font-semibold">Upgrade Options</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card className="border-primary/20">
+                      <CardContent className="p-4">
+                        <div className="text-center">
+                          <h5 className="font-semibold mb-2">Monthly Plan</h5>
+                          <div className="text-2xl font-bold text-primary mb-2">$19.99</div>
+                          <p className="text-sm text-muted-foreground mb-4">per month</p>
+                          <Button 
+                            className="w-full"
+                            onClick={() => handleUpgrade('monthly')}
+                          >
+                            <Crown className="h-4 w-4 mr-2" />
+                            Upgrade Now
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-primary/20">
+                      <CardContent className="p-4">
+                        <div className="text-center">
+                          <h5 className="font-semibold mb-2">Annual Plan</h5>
+                          <div className="text-2xl font-bold text-primary mb-2">$199.99</div>
+                          <p className="text-sm text-muted-foreground mb-4">per year (Save 17%)</p>
+                          <Button 
+                            className="w-full"
+                            onClick={() => handleUpgrade('annual')}
+                          >
+                            <Crown className="h-4 w-4 mr-2" />
+                            Upgrade Now
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Payment Methods */}
+                  <div className="space-y-4">
+                    <h4 className="font-semibold">Payment Methods</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Card className="border-blue-200">
+                        <CardContent className="p-4 text-center">
+                          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                            <span className="text-blue-600 font-bold">S</span>
+                          </div>
+                          <h6 className="font-medium">Stripe</h6>
+                          <p className="text-xs text-muted-foreground">Credit/Debit Cards</p>
+                          <Button variant="outline" size="sm" className="w-full mt-2">
+                            Pay with Stripe
+                          </Button>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card className="border-orange-200">
+                        <CardContent className="p-4 text-center">
+                          <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                            <span className="text-orange-600 font-bold">P</span>
+                          </div>
+                          <h6 className="font-medium">PayPal</h6>
+                          <p className="text-xs text-muted-foreground">PayPal Account</p>
+                          <Button variant="outline" size="sm" className="w-full mt-2">
+                            Pay with PayPal
+                          </Button>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card className="border-green-200">
+                        <CardContent className="p-4 text-center">
+                          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                            <span className="text-green-600 font-bold">J</span>
+                          </div>
+                          <h6 className="font-medium">JazzCash</h6>
+                          <p className="text-xs text-muted-foreground">Mobile Wallet</p>
+                          <Button variant="outline" size="sm" className="w-full mt-2">
+                            Pay with JazzCash
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Card className="border-purple-200">
+                        <CardContent className="p-4 text-center">
+                          <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                            <span className="text-purple-600 font-bold">E</span>
+                          </div>
+                          <h6 className="font-medium">EasyPaisa</h6>
+                          <p className="text-xs text-muted-foreground">Mobile Wallet</p>
+                          <Button variant="outline" size="sm" className="w-full mt-2">
+                            Pay with EasyPaisa
+                          </Button>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card className="border-gray-200">
+                        <CardContent className="p-4 text-center">
+                          <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                            <span className="text-gray-600 font-bold">B</span>
+                          </div>
+                          <h6 className="font-medium">Bank Transfer</h6>
+                          <p className="text-xs text-muted-foreground">Direct Bank Transfer</p>
+                          <Button variant="outline" size="sm" className="w-full mt-2">
+                            Bank Details
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Billing Information */}
+              {isPremium && (
+                <div className="space-y-4">
+                  <h4 className="font-semibold">Billing Information</h4>
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">Next billing date</span>
+                      <span className="text-sm">January 15, 2024</span>
+                    </div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-sm font-medium">Amount</span>
+                      <span className="text-sm">$19.99</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm">
+                        Update Payment Method
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        Cancel Subscription
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

@@ -304,3 +304,73 @@ export const useUnlikeComment = () => {
     },
   });
 };
+
+// Pin post mutation (Moderator only)
+export const usePinPost = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (postId: string) => {
+      const response = await api.community.pinPost(postId);
+      return response.data;
+    },
+    onSuccess: (data, postId) => {
+      // Update posts cache
+      queryClient.setQueriesData({ queryKey: postKeys.lists() }, (old: any) => {
+        if (old?.posts) {
+          return {
+            ...old,
+            posts: old.posts.map((post: any) =>
+              post.id === postId ? { ...post, isPinned: data.isPinned } : post
+            ),
+          };
+        }
+        return old;
+      });
+
+      toast.success(data.isPinned ? 'Post pinned!' : 'Post unpinned!');
+    },
+    onError: (error: any) => {
+      const message = error?.response?.data?.message || 'Failed to pin/unpin post';
+      toast.error(message);
+    },
+  });
+};
+
+// Create announcement mutation (Moderator only)
+export const useCreateAnnouncement = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { content: string; images?: string[] }) => {
+      const response = await api.community.createAnnouncement(data);
+      return response.data;
+    },
+    onSuccess: () => {
+      // Invalidate posts list
+      queryClient.invalidateQueries({ queryKey: postKeys.lists() });
+      toast.success('Announcement created successfully!');
+    },
+    onError: (error: any) => {
+      const message = error?.response?.data?.message || 'Failed to create announcement';
+      toast.error(message);
+    },
+  });
+};
+
+// Report post mutation
+export const useReportPost = () => {
+  return useMutation({
+    mutationFn: async ({ postId, reason }: { postId: string; reason?: string }) => {
+      const response = await api.community.reportPost(postId, reason);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success('Post reported successfully!');
+    },
+    onError: (error: any) => {
+      const message = error?.response?.data?.message || 'Failed to report post';
+      toast.error(message);
+    },
+  });
+};

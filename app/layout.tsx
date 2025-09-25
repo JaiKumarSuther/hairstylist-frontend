@@ -5,6 +5,7 @@ import { QueryProvider } from "@/lib/providers/QueryProvider";
 import { ToastProvider } from "@/lib/providers/ToastProvider";
 import { AuthProvider } from "@/lib/providers/AuthProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { NotificationInitializer } from "@/components/common/NotificationInitializer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -67,6 +68,7 @@ export default function RootLayout({
             {children}
             <ToastProvider />
             <Toaster />
+            <NotificationInitializer />
           </AuthProvider>
         </QueryProvider>
       </body>

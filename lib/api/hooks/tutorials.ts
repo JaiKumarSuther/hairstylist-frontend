@@ -188,3 +188,27 @@ export const useUnfavoriteTutorial = () => {
     },
   });
 };
+
+// Get favorite tutorials
+export const useFavoriteTutorials = () => {
+  return useQuery({
+    queryKey: tutorialKeys.favorites(),
+    queryFn: async () => {
+      const response = await api.tutorials.getFavorites();
+      return response.data;
+    },
+    enabled: !!localStorage.getItem('auth_token'),
+  });
+};
+
+// Get tutorial categories
+export const useTutorialCategories = () => {
+  return useQuery({
+    queryKey: tutorialKeys.categories(),
+    queryFn: async () => {
+      const response = await api.tutorials.getCategories();
+      return response.data;
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+};

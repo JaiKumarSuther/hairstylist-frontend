@@ -284,3 +284,4 @@ export default function ProfileSettings({ user, onSave, onCancel }: ProfileSetti
     </div>
   );
 }
+

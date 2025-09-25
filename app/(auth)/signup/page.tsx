@@ -8,17 +8,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Phone } from 'lucide-react';
 import { useSignup } from '@/lib/api/hooks/auth';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 
 export default function SignupPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [signupMethod, setSignupMethod] = useState<'email' | 'phone'>('email');
   const signupMutation = useSignup();
   const router = useRouter();
 
@@ -29,8 +31,12 @@ export default function SignupPage() {
       return;
     }
     
+    const credentials = signupMethod === 'email' 
+      ? { name, email, password, confirmPassword }
+      : { name, phone, password, confirmPassword };
+    
     signupMutation.mutate(
-      { name, email, password, confirmPassword },
+      credentials,
       {
         onSuccess: () => {
           router.push('/');
@@ -63,6 +69,30 @@ export default function SignupPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Signup Method Toggle */}
+              <div className="flex gap-2 mb-4">
+                <Button
+                  type="button"
+                  variant={signupMethod === 'email' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSignupMethod('email')}
+                  className="flex-1"
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  Email
+                </Button>
+                <Button
+                  type="button"
+                  variant={signupMethod === 'phone' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSignupMethod('phone')}
+                  className="flex-1"
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Phone
+                </Button>
+              </div>
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 {signupMutation.error && (
                   <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
@@ -86,21 +116,39 @@ export default function SignupPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
+                {signupMethod === 'email' ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="+1 (555) 123-4567"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>

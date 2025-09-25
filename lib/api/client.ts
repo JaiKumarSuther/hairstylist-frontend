@@ -120,9 +120,9 @@ apiClient.interceptors.response.use(
 export const api = {
   // Auth endpoints
   auth: {
-    login: (credentials: { email: string; password: string }) =>
+    login: (credentials: { email?: string; phone?: string; password: string }) =>
       apiClient.post('/api/auth/login', credentials),
-    signup: (credentials: { name: string; email: string; password: string; confirmPassword: string }) =>
+    signup: (credentials: { name: string; email?: string; phone?: string; password: string; confirmPassword: string }) =>
       apiClient.post('/api/auth/signup', credentials),
     logout: () => apiClient.post('/api/auth/logout'),
     me: () => apiClient.get('/api/auth/me'),
@@ -160,6 +160,9 @@ export const api = {
     deleteComment: (id: string) => apiClient.delete(`/api/community/comments/${id}`),
     likeComment: (id: string) => apiClient.post(`/api/community/comments/${id}/like`),
     unlikeComment: (id: string) => apiClient.delete(`/api/community/comments/${id}/like`),
+    pinPost: (id: string) => apiClient.post(`/api/community/posts/${id}/pin`),
+    createAnnouncement: (data: any) => apiClient.post('/api/community/announcements', data),
+    reportPost: (id: string, reason?: string) => apiClient.post(`/api/community/posts/${id}/report`, { reason }),
   },
 
   // Gallery endpoints
@@ -183,6 +186,7 @@ export const api = {
     favorite: (id: string) => apiClient.post(`/api/tutorials/${id}/favorite`),
     unfavorite: (id: string) => apiClient.delete(`/api/tutorials/${id}/favorite`),
     getFavorites: () => apiClient.get('/api/tutorials/favorites'),
+    getCategories: () => apiClient.get('/api/tutorials/categories'),
   },
 
   // Chat endpoints
@@ -191,6 +195,18 @@ export const api = {
     getSessions: () => apiClient.get('/api/chat/sessions'),
     getSession: (id: string) => apiClient.get(`/api/chat/sessions/${id}`),
     deleteSession: (id: string) => apiClient.delete(`/api/chat/sessions/${id}`),
+  },
+
+  // Notes endpoints
+  notes: {
+    getAll: (params?: any) => apiClient.get('/api/notes', { params }),
+    getById: (id: string) => apiClient.get(`/api/notes/${id}`),
+    create: (data: any) => apiClient.post('/api/notes', data),
+    update: (id: string, data: any) => apiClient.put(`/api/notes/${id}`, data),
+    delete: (id: string) => apiClient.delete(`/api/notes/${id}`),
+    toggleFavorite: (id: string) => apiClient.post(`/api/notes/${id}/favorite`),
+    getFavorites: () => apiClient.get('/api/notes/favorites'),
+    getCategories: () => apiClient.get('/api/notes/categories'),
   },
 };
 

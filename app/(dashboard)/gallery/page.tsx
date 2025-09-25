@@ -8,6 +8,7 @@ import { Heart, Eye } from 'lucide-react';
 import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { useFavorites } from '@/hooks/useLocalStorage';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { ImageModal } from '@/components/gallery/ImageModal';
 
 // TODO: Replace with real data from API hooks
 const mockHairstyles = [
@@ -72,7 +73,8 @@ const categories = ['All', 'Wedding', 'Party', 'Professional', 'Casual', 'Trendi
 const HairstyleCard: React.FC<{ 
   hairstyle: typeof mockHairstyles[0];
   onFavorite: (id: string) => void;
-}> = ({ hairstyle, onFavorite }) => {
+  onImageClick: (id: string) => void;
+}> = ({ hairstyle, onFavorite, onImageClick }) => {
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'beginner': return 'bg-gradient-to-r from-emerald-400 to-green-500 text-white shadow-emerald-200';
@@ -98,7 +100,10 @@ const HairstyleCard: React.FC<{
       {/* Gradient background overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50 to-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       
-      <div className="relative aspect-[3/4] overflow-hidden rounded-t-2xl">
+      <div 
+        className="relative aspect-[3/4] overflow-hidden rounded-t-2xl cursor-pointer"
+        onClick={() => onImageClick(hairstyle.id)}
+      >
         <ImageWithFallback
           src={hairstyle.image}
           alt={hairstyle.title}
@@ -176,6 +181,7 @@ const HairstyleCard: React.FC<{
 
 export default function GalleryPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const { toggleFavorite } = useFavorites();
 
   const filteredHairstyles = selectedCategory === 'All' 
@@ -184,6 +190,11 @@ export default function GalleryPage() {
 
   const handleFavorite = (id: string) => {
     toggleFavorite(id);
+  };
+
+  const handleImageClick = (id: string) => {
+    const index = filteredHairstyles.findIndex(h => h.id === id);
+    setSelectedImageIndex(index >= 0 ? index : null);
   };
 
   return (
@@ -233,10 +244,21 @@ export default function GalleryPage() {
               <HairstyleCard
                 hairstyle={hairstyle}
                 onFavorite={handleFavorite}
+                onImageClick={handleImageClick}
               />
             </div>
           ))}
         </div>
+
+        {/* Image Modal */}
+        <ImageModal
+          isOpen={selectedImageIndex !== null}
+          onClose={() => setSelectedImageIndex(null)}
+          images={filteredHairstyles}
+          currentIndex={selectedImageIndex || 0}
+          onIndexChange={setSelectedImageIndex}
+          onFavorite={handleFavorite}
+        />
       </div>
     </ErrorBoundary>
   );

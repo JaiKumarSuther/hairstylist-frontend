@@ -6,9 +6,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Crown, Sparkles } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 export const WelcomeSection: React.FC = () => {
-  const { user, isPremium, trialDaysLeft } = useAuth();
+  const { user, isPremium, trialDaysLeft, isAuthenticated } = useAuth();
+  const router = useRouter();
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -52,6 +55,24 @@ export const WelcomeSection: React.FC = () => {
 
   const featured = getFeaturedContent();
 
+  const handleJoinNow = () => {
+    if (!isAuthenticated) {
+      toast.error('Please login to join workshops');
+      router.push('/login');
+      return;
+    }
+
+    // For now, redirect to workshops page with a filter for live workshops
+    router.push('/workshops?filter=live');
+    toast.success('Redirecting to live workshops...');
+  };
+
+  const handleLearnMore = () => {
+    // For now, redirect to workshops page to show all workshops
+    router.push('/workshops');
+    toast.success('Explore all available workshops');
+  };
+
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
@@ -85,10 +106,16 @@ export const WelcomeSection: React.FC = () => {
                 with {featured.instructor} • {featured.date}
               </p>
               <div className="flex gap-2">
-                <Button className="bg-primary hover:bg-primary/90">
+                <Button 
+                  className="bg-primary hover:bg-primary/90"
+                  onClick={handleJoinNow}
+                >
                   {featured.isLive ? 'Join Now' : 'Register'}
                 </Button>
-                <Button variant="outline">
+                <Button 
+                  variant="outline"
+                  onClick={handleLearnMore}
+                >
                   Learn More
                 </Button>
               </div>

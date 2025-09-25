@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import { useTutorials, useFavoriteTutorial, useUnfavoriteTutorial } from '@/lib/api/hooks/tutorials';
 import { useAuth } from '@/hooks/useAuth';
+import { VideoPlayer } from '@/components/common/VideoPlayer';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Tutorial {
   id: string;
@@ -46,6 +48,7 @@ export default function TutorialsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
+  const [selectedTutorial, setSelectedTutorial] = useState<Tutorial | null>(null);
   
   const { data: tutorialsData, isLoading, error } = useTutorials();
   const { user } = useAuth();
@@ -252,7 +255,10 @@ export default function TutorialsPage() {
                 </div>
 
                 <div className="flex gap-2 pt-2">
-                  <Button className="flex-1">
+                  <Button 
+                    className="flex-1"
+                    onClick={() => setSelectedTutorial(tutorial)}
+                  >
                     <Play className="h-4 w-4 mr-2" />
                     Watch Now
                   </Button>
@@ -286,6 +292,28 @@ export default function TutorialsPage() {
           </Button>
         </div>
       )}
+
+      {/* Video Player Modal */}
+      <Dialog open={!!selectedTutorial} onOpenChange={() => setSelectedTutorial(null)}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>{selectedTutorial?.title}</DialogTitle>
+          </DialogHeader>
+          {selectedTutorial && (
+            <VideoPlayer
+              src={`https://sample-videos.com/zip/10/mp4/SampleVideo_${selectedTutorial.id.padStart(3, '0')}.mp4`}
+              title={selectedTutorial.title}
+              description={selectedTutorial.description}
+              thumbnail={selectedTutorial.thumbnail}
+              duration={selectedTutorial.duration}
+              isLiked={selectedTutorial.isLiked}
+              isBookmarked={selectedTutorial.isBookmarked}
+              onLike={() => handleLike(selectedTutorial.id)}
+              onBookmark={() => handleBookmark(selectedTutorial.id)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

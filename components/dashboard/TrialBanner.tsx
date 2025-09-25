@@ -7,10 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 export const TrialBanner: React.FC = () => {
   const { isPremium, trialDaysLeft } = useAuth();
   const [dismissed, setDismissed] = useLocalStorage('trial_banner_dismissed', false);
+  const router = useRouter();
 
   // Don't show banner if user is premium or trial is dismissed
   if (isPremium || dismissed) {
@@ -27,8 +30,10 @@ export const TrialBanner: React.FC = () => {
   };
 
   const handleUpgrade = () => {
-    // TODO: Implement upgrade flow
-    console.log('Upgrade clicked');
+    // For now, redirect to profile page where user can manage subscription
+    // In a real app, this would redirect to a payment/subscription page
+    router.push('/profile?tab=subscription');
+    toast.success('Redirecting to subscription management...');
   };
 
   const getTrialMessage = () => {

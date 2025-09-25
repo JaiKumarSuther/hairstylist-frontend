@@ -11,6 +11,7 @@ import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { usePosts, useLikePost, useUnlikePost, useCreateComment } from '@/lib/api/hooks/community';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
+import { Pin, PinOff, AlertTriangle, Shield } from 'lucide-react';
 
 interface Post {
   id: string;
@@ -18,6 +19,7 @@ interface Post {
     name: string;
     avatar: string;
     isVerified: boolean;
+    isModerator?: boolean;
   };
   content: string;
   images?: string[];
@@ -26,6 +28,8 @@ interface Post {
   comments: number;
   liked: boolean;
   category: string;
+  isPinned?: boolean;
+  isAnnouncement?: boolean;
 }
 
 const PostCard: React.FC<{ post: Post }> = ({ post }) => {
@@ -35,6 +39,9 @@ const PostCard: React.FC<{ post: Post }> = ({ post }) => {
   const likePost = useLikePost();
   const unlikePost = useUnlikePost();
   const createComment = useCreateComment();
+
+  // Check if current user is a moderator (your mother)
+  const isModerator = user?.email === 'mother@hairstylist.com' || user?.name?.includes('Moderator');
 
   const handleLike = async () => {
     if (!user) return;
@@ -61,8 +68,20 @@ const PostCard: React.FC<{ post: Post }> = ({ post }) => {
     }
   };
 
+  const handlePinPost = () => {
+    // TODO: Implement pin/unpin functionality
+    console.log('Pin/unpin post:', post.id);
+  };
+
+  const handleReportPost = () => {
+    // TODO: Implement report functionality
+    console.log('Report post:', post.id);
+  };
+
   return (
-    <Card className="hover:shadow-md transition-shadow duration-200">
+    <Card className={`hover:shadow-md transition-shadow duration-200 ${
+      post.isPinned ? 'border-l-4 border-l-primary bg-primary/5' : ''
+    }`}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -80,11 +99,29 @@ const PostCard: React.FC<{ post: Post }> = ({ post }) => {
                     ✓
                   </Badge>
                 )}
+                {post.author.isModerator && (
+                  <Badge variant="default" className="text-xs px-1 py-0 bg-blue-600">
+                    <Shield className="h-3 w-3 mr-1" />
+                    Moderator
+                  </Badge>
+                )}
               </div>
               <p className="text-xs text-muted-foreground">{post.timestamp}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {post.isPinned && (
+              <Badge variant="default" className="text-xs bg-primary">
+                <Pin className="h-3 w-3 mr-1" />
+                Pinned
+              </Badge>
+            )}
+            {post.isAnnouncement && (
+              <Badge variant="default" className="text-xs bg-orange-600">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                Announcement
+              </Badge>
+            )}
             <Badge variant="outline" className="text-xs">
               {post.category}
             </Badge>
@@ -149,6 +186,36 @@ const PostCard: React.FC<{ post: Post }> = ({ post }) => {
               <Share className="h-4 w-4" />
               Share
             </Button>
+            
+            {/* Moderator Actions */}
+            {isModerator && (
+              <div className="flex items-center gap-1 border-l pl-2 ml-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handlePinPost}
+                  className={`gap-2 text-xs ${
+                    post.isPinned ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  {post.isPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+                  {post.isPinned ? 'Unpin' : 'Pin'}
+                </Button>
+              </div>
+            )}
+            
+            {/* Report Button for non-moderators */}
+            {!isModerator && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleReportPost}
+                className="gap-2 text-muted-foreground hover:text-red-500"
+              >
+                <AlertTriangle className="h-4 w-4" />
+                Report
+              </Button>
+            )}
           </div>
         </div>
 
@@ -186,6 +253,9 @@ const PostCard: React.FC<{ post: Post }> = ({ post }) => {
 export default function CommunityPage() {
   const { data: postsData, isLoading, error } = usePosts();
   const { user } = useAuth();
+  
+  // Check if current user is a moderator
+  const isModerator = user?.email === 'mother@hairstylist.com' || user?.name?.includes('Moderator');
 
   if (isLoading) {
     return (
@@ -240,8 +310,27 @@ export default function CommunityPage() {
             <p className="text-muted-foreground">
               Connect with fellow stylists and share your work
             </p>
+            {isModerator && (
+              <div className="flex items-center gap-2 mt-2">
+                <Badge variant="default" className="bg-blue-600">
+                  <Shield className="h-3 w-3 mr-1" />
+                  Moderator
+                </Badge>
+                <span className="text-sm text-muted-foreground">
+                  You have moderation privileges
+                </span>
+              </div>
+            )}
           </div>
-          <Button>Create Post</Button>
+          <div className="flex gap-2">
+            {isModerator && (
+              <Button variant="outline" className="bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100">
+                <AlertTriangle className="h-4 w-4 mr-2" />
+                Create Announcement
+              </Button>
+            )}
+            <Button>Create Post</Button>
+          </div>
         </div>
 
         {/* Posts */}
